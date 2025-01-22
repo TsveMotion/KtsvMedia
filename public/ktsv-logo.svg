@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="35" viewBox="0 0 120 35" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title desc" role="img">
+    <!-- Accessibility title and description -->
+    <title id="title">KtsvMedia Logo</title>
+    <desc id="desc">A logo with the text "KtsvMedia" and a decorative underline.</desc>
+
+    <!-- Background rectangle -->
+    <rect width="120" height="35" fill="white" />
+
+    <!-- KtsvMedia text -->
+    <text x="3" y="22" font-family="Arial, sans-serif" font-size="20" font-weight="900" letter-spacing="-0.5">
+        <tspan fill="#0066FF">Ktsv</tspan><tspan fill="#444444">Media</tspan>
+    </text>
+
+    <!-- Decorative underline -->
+    <line x1="3" y1="26" x2="117" y2="26" stroke="#0066FF" stroke-width="1" />
+</svg>
