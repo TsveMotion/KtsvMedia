@@ -54,7 +54,7 @@ export default function Home() {
               >
                 <Link href="/schedule" className="inline-flex space-x-6">
                   <span className="rounded-full bg-indigo-600/10 px-3 py-1 text-sm font-semibold leading-6 text-indigo-600 ring-1 ring-inset ring-indigo-600/10">
-                    What's new
+                    What&apos;s new
                   </span>
                   <span className="inline-flex items-center space-x-2 text-sm font-medium leading-6 text-gray-600">
                     <span>Just launched</span>
@@ -240,7 +240,7 @@ export default function Home() {
             Ready to transform your business?
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-gray-600">
-            Schedule your consultation today and let's discuss how we can help you achieve your advertising goals.
+            Schedule your consultation today and let&apos;s discuss how we can help you achieve your advertising goals.
           </p>
           <motion.div 
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6"

@@ -170,7 +170,7 @@ export default function About() {
               Ready to Work Together?
             </h2>
             <p className="mt-4 text-lg text-gray-600">
-              Let's discuss how we can help your business grow.
+              Let&apos;s create something amazing together!
             </p>
             <div className="mt-8">
               <a

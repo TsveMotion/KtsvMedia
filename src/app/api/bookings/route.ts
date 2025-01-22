@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendBookingConfirmation, sendAdminNotification } from '@/lib/email';
+import { sendBookingConfirmationEmail as sendBookingConfirmation, sendAdminNotificationEmail as sendAdminNotification } from '@/lib/email';
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { date, time, name, email, phone } = body;
+    const { name, email, phone, date, time } = await req.json();
 
     // Validate required fields
     if (!date || !time || !name || !email || !phone) {
@@ -72,48 +71,37 @@ export async function POST(req: Request) {
         name,
         email,
         phone,
-        bookingDate,
+        bookingDate: new Date(date),
         bookingTime: time,
-      },
+        status: 'PENDING'
+      }
     });
 
     console.log('Booking created:', booking);
 
     // Send confirmation email to customer
-    const { success: emailSent, error: emailError } = await sendBookingConfirmation({
+    await sendBookingConfirmation({
+      id: booking.id,
       name,
       email,
-      phone,
-      date,
+      date: bookingDate.toLocaleDateString(),
       time,
-      meetingUrl: process.env.MEETING_URL,
+      meetingUrl: `${process.env.MEETING_URL}/${booking.id}`
     });
-
-    if (!emailSent) {
-      console.error('Failed to send confirmation email:', emailError);
-    } else {
-      console.log('Confirmation email sent successfully');
-    }
 
     // Send notification to admin
-    const adminNotification = await sendAdminNotification({
+    await sendAdminNotification({
+      id: booking.id,
       name,
       email,
       phone,
-      date,
-      time,
+      date: bookingDate.toLocaleDateString(),
+      time
     });
-
-    if (!adminNotification.success) {
-      console.error('Failed to send admin notification:', adminNotification.error);
-    } else {
-      console.log('Admin notification sent successfully');
-    }
 
     return NextResponse.json({ 
       success: true, 
       booking,
-      emailSent,
     });
   } catch (error) {
     console.error('Booking error:', error);
