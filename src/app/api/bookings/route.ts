@@ -1,18 +1,52 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendBookingConfirmationEmail as sendBookingConfirmation, sendAdminNotificationEmail as sendAdminNotification } from '@/lib/email';
+import { sendBookingConfirmationEmail, sendAdminNotificationEmail } from '@/lib/email';
+import { format } from 'date-fns';
+import { Booking, BookingWithoutId } from '@/types/prisma';
 
-export async function POST(req: Request) {
+interface BookingRequest {
+  name: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+}
+
+interface BookingResponse {
+  error?: string;
+  success: boolean;
+  booking?: Booking;
+}
+
+export async function GET(): Promise<NextResponse<{ bookings: Booking[]; error?: string }>> {
   try {
-    const { name, email, phone, date, time } = await req.json();
+    const bookings = await prisma.booking.findMany({
+      orderBy: {
+        bookingDate: 'desc'
+      }
+    });
 
-    // Validate required fields
-    if (!date || !time || !name || !email || !phone) {
-      console.error('Missing required fields:', { date, time, name, email, phone });
-      return NextResponse.json(
-        { error: 'All fields are required' },
-        { status: 400 }
-      );
+    return NextResponse.json({ bookings });
+  } catch (error) {
+    console.error('Error fetching bookings:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch bookings', 
+      bookings: [] 
+    }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request): Promise<NextResponse<BookingResponse>> {
+  try {
+    const body: BookingRequest = await request.json();
+    const { name, email, phone, date, time } = body;
+
+    // Validate input
+    if (!name || !email || !phone || !date || !time) {
+      return NextResponse.json({ 
+        error: 'Missing required fields',
+        success: false 
+      }, { status: 400 });
     }
 
     // Validate email format
@@ -20,7 +54,7 @@ export async function POST(req: Request) {
     if (!emailRegex.test(email)) {
       console.error('Invalid email format:', email);
       return NextResponse.json(
-        { error: 'Invalid email format' },
+        { error: 'Invalid email format', success: false },
         { status: 400 }
       );
     }
@@ -30,7 +64,7 @@ export async function POST(req: Request) {
     if (!phoneRegex.test(phone)) {
       console.error('Invalid phone format:', phone);
       return NextResponse.json(
-        { error: 'Invalid phone number format' },
+        { error: 'Invalid phone number format', success: false },
         { status: 400 }
       );
     }
@@ -40,30 +74,25 @@ export async function POST(req: Request) {
     if (bookingDate < new Date()) {
       console.error('Date is in the past:', date);
       return NextResponse.json(
-        { error: 'Cannot book a date in the past' },
+        { error: 'Cannot book a date in the past', success: false },
         { status: 400 }
       );
     }
 
-    console.log('Checking for existing booking:', { date: bookingDate, time });
-
-    // Check for existing booking
+    // Check if slot is still available
     const existingBooking = await prisma.booking.findFirst({
       where: {
         bookingDate: bookingDate,
-        bookingTime: time,
-      },
+        bookingTime: time
+      }
     });
 
     if (existingBooking) {
-      console.error('Time slot already booked:', { date, time });
-      return NextResponse.json(
-        { error: 'This time slot is already booked' },
-        { status: 400 }
-      );
+      return NextResponse.json({ 
+        error: 'This time slot is no longer available',
+        success: false 
+      }, { status: 409 });
     }
-
-    console.log('Creating new booking...');
 
     // Create booking
     const booking = await prisma.booking.create({
@@ -71,43 +100,28 @@ export async function POST(req: Request) {
         name,
         email,
         phone,
-        bookingDate: new Date(date),
+        bookingDate,
         bookingTime: time,
-        status: 'PENDING'
+        status: 'confirmed'
       }
     });
 
-    console.log('Booking created:', booking);
-
-    // Send confirmation email to customer
-    await sendBookingConfirmation({
-      id: booking.id,
-      name,
-      email,
-      date: bookingDate.toLocaleDateString(),
-      time,
-      meetingUrl: `${process.env.MEETING_URL}/${booking.id}`
-    });
-
-    // Send notification to admin
-    await sendAdminNotification({
-      id: booking.id,
-      name,
-      email,
-      phone,
-      date: bookingDate.toLocaleDateString(),
-      time
-    });
+    // Send confirmation emails
+    await Promise.all([
+      sendBookingConfirmationEmail(booking),
+      sendAdminNotificationEmail(booking)
+    ]);
 
     return NextResponse.json({ 
       success: true, 
-      booking,
+      booking 
     });
+
   } catch (error) {
-    console.error('Booking error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process booking' },
-      { status: 500 }
-    );
+    console.error('Error creating booking:', error);
+    return NextResponse.json({ 
+      error: 'Failed to create booking',
+      success: false 
+    }, { status: 500 });
   }
 }

@@ -1,14 +1,9 @@
+import { format } from 'date-fns';
 import { BookingEmailProps, AdminEmailProps } from "@/lib/email";
-import {
-  Html,
-  Body,
-  Container,
-  Text,
-  Link,
-  Preview,
-  Section,
-  Heading,
-} from "@react-email/components";
+
+interface EmailTemplateProps extends BookingEmailProps {
+  meetingUrl?: string;
+}
 
 const main = {
   backgroundColor: "#f6f9fc",
@@ -42,76 +37,37 @@ const text = {
   margin: "16px 0",
 };
 
-export function getBookingEmailTemplate(props: BookingEmailProps) {
-  const { id, name, date, time, meetingUrl } = props;
+export function getBookingEmailTemplate(props: EmailTemplateProps): string {
+  const { name, email, phone, bookingDate, bookingTime, meetingUrl } = props;
+  const formattedDate = format(bookingDate, 'EEEE, MMMM d, yyyy');
 
-  return (
-    <Html>
-      <Preview>Your booking with KTSV Media has been confirmed</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={h1}>Booking Confirmation</Heading>
-          <Section style={section}>
-            <Text style={text}>Dear {name},</Text>
-            <Text style={text}>
-              Your booking with KTSV Media has been confirmed for {date} at {time}.
-            </Text>
-            <Text style={text}>
-              Meeting Link: <Link href={meetingUrl}>Join Meeting</Link>
-            </Text>
-            {id && (
-              <Text style={text}>
-                You can view or manage your booking at:{" "}
-                <Link href={`${process.env.NEXT_PUBLIC_APP_URL}/meeting/${encodeURIComponent(id)}`}>
-                  View Booking
-                </Link>
-              </Text>
-            )}
-            <Text style={text}>
-              If you need to make any changes or have questions, please don&apos;t hesitate to contact us.
-            </Text>
-            <Text style={text}>Best regards,</Text>
-            <Text style={text}>KTSV Media Team</Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
-  );
+  return `
+Dear ${name},
+
+Your booking with KTSV Media has been confirmed for ${formattedDate} at ${bookingTime}.
+
+${meetingUrl ? `Meeting Link: ${meetingUrl}` : ''}
+
+Best regards,
+KTSV Media Team
+  `.trim();
 }
 
-export function getAdminEmailTemplate(props: AdminEmailProps) {
-  const { id, name, email, phone, date, time } = props;
+export function getAdminEmailTemplate(props: AdminEmailProps): string {
+  const { name, email, phone, bookingDate, bookingTime } = props;
+  const formattedDate = format(bookingDate, 'EEEE, MMMM d, yyyy');
 
-  return (
-    <Html>
-      <Preview>New Booking Notification - KTSV Media</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={h1}>New Booking Notification</Heading>
-          <Section style={section}>
-            <Text style={text}>A new booking has been made:</Text>
-            <Text style={text}>
-              Client: {name}
-              <br />
-              Email: {email}
-              <br />
-              Phone: {phone}
-              <br />
-              Date: {date}
-              <br />
-              Time: {time}
-            </Text>
-            {id && (
-              <Text style={text}>
-                Booking details:{" "}
-                <Link href={`${process.env.NEXT_PUBLIC_APP_URL}/meeting/${encodeURIComponent(id)}`}>
-                  View Booking
-                </Link>
-              </Text>
-            )}
-          </Section>
-        </Container>
-      </Body>
-    </Html>
-  );
+  return `
+New Booking Notification
+
+Customer Details:
+Name: ${name}
+Email: ${email}
+Phone: ${phone}
+Date: ${formattedDate}
+Time: ${bookingTime}
+
+Best regards,
+KTSV Media System
+  `.trim();
 }

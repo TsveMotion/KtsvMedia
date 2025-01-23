@@ -1,81 +1,51 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { format } from 'date-fns';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const start = searchParams.get('start');
-    const end = searchParams.get('end');
+    const date = searchParams.get('date');
 
-    if (!start || !end) {
-      return NextResponse.json(
-        { error: 'Start and end dates are required' },
-        { status: 400 }
-      );
+    if (!date) {
+      return NextResponse.json({ error: 'Date is required' }, { status: 400 });
     }
 
-    // Get all bookings for the date range
     const bookings = await prisma.booking.findMany({
       where: {
-        bookingDate: {
-          gte: new Date(start),
-          lte: new Date(end),
-        },
-      },
-      select: {
-        bookingDate: true,
-        bookingTime: true,
-        status: true,
-      },
-    });
-
-    // Organize bookings by date
-    const bookedSlots: { [key: string]: string[] } = {};
-    bookings.forEach((booking) => {
-      const dateStr = booking.bookingDate.toISOString().split('T')[0];
-      if (!bookedSlots[dateStr]) {
-        bookedSlots[dateStr] = [];
-      }
-      if (booking.status === 'confirmed') {
-        bookedSlots[dateStr].push(booking.bookingTime);
+        bookingDate: new Date(date)
       }
     });
 
-    // Get available time slots for each day
+    // Define available time slots
     const timeSlots = [
-      '09:00', '10:00', '11:00', '12:00', '13:00',
+      '09:00', '10:00', '11:00', '12:00', '13:00', 
       '14:00', '15:00', '16:00', '17:00'
     ];
 
-    const availability: { [key: string]: string[] } = {};
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    // Filter out booked time slots
+    const availableTimeSlots = timeSlots.filter(time => 
+      !bookings.some(booking => booking.bookingTime === time)
+    );
 
-    for (let date = startDate; date <= endDate; date.setDate(date.getDate() + 1)) {
-      const dateStr = date.toISOString().split('T')[0];
-      const dayOfWeek = date.getDay();
-
-      // Skip weekends (0 = Sunday, 6 = Saturday)
-      if (dayOfWeek === 0 || dayOfWeek === 6) {
-        continue;
-      }
-
-      // Get available slots for this day
-      availability[dateStr] = timeSlots.filter(
-        time => !bookedSlots[dateStr]?.includes(time)
-      );
-    }
-
-    return NextResponse.json({
-      bookedSlots,
-      availability,
-      timeSlots,
-    });
+    return NextResponse.json({ availableTimeSlots });
   } catch (error) {
-    console.error('Failed to get availability:', error);
+    console.error('Error checking availability:', error);
     return NextResponse.json(
-      { error: 'Failed to get availability' },
+      { error: 'Failed to check availability' },
       { status: 500 }
     );
   }
+}
+
+// Add OPTIONS handler for CORS
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
 }

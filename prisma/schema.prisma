@@ -27,3 +27,41 @@ model Booking {
 
   @@map("bookings")
 }
+
+model Email {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  isValid   Boolean     @default(false)
+  status    String      @default("pending") // pending, valid, invalid
+  notes     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  groups    EmailGroup[]
+
+  @@map("emails")
+}
+
+model EmailGroup {
+  id        String         @id @default(cuid())
+  name      String
+  emails    Email[]
+  campaigns EmailCampaign[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("email_groups")
+}
+
+model EmailCampaign {
+  id        String     @id @default(cuid())
+  subject   String
+  content   String     @db.Text
+  status    String     // draft, sending, sent, failed
+  sentAt    DateTime?
+  group     EmailGroup @relation(fields: [groupId], references: [id])
+  groupId   String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("email_campaigns")
+}
