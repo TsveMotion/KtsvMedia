@@ -39,6 +39,24 @@ export async function middleware(request: NextRequest) {
   // Refresh session if it exists
   await supabase.auth.getSession()
 
+  // Only run on admin API routes
+  if (request.nextUrl.pathname.startsWith('/api/admin')) {
+    // Skip auth endpoint
+    if (request.nextUrl.pathname === '/api/admin/auth') {
+      return NextResponse.next()
+    }
+
+    // Check for authentication
+    const isAuthenticated = request.cookies.get('adminAuthenticated')?.value === 'true'
+    
+    if (!isAuthenticated) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+  }
+
   return response
 }
 
@@ -52,5 +70,6 @@ export const config = {
      * - favicon.ico (favicon file)
      */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/api/admin/:path*',
   ],
 }

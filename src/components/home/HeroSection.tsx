@@ -20,24 +20,24 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden pt-16 sm:pt-24">
       <BackgroundAnimation />
       
       <motion.div
         variants={container}
         initial="hidden"
         animate="show"
-        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative text-center flex flex-col items-center justify-center"
+        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative text-center flex flex-col items-center justify-center py-12 sm:py-16"
       >
         {/* Small badge at top */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-8 inline-flex items-center gap-x-2 rounded-full bg-white/90 px-4 py-1.5 text-sm shadow-sm"
+          className="mb-6 sm:mb-8 inline-flex items-center gap-x-2 rounded-full bg-white/90 px-4 py-1.5 text-xs sm:text-sm shadow-sm"
         >
           <span className="flex items-center gap-2">
-            <SparklesIcon className="h-4 w-4 text-yellow-500" />
+            <SparklesIcon className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" />
             <span className="font-medium text-indigo-600">Free 30-min consultation</span>
           </span>
           <span className="h-1 w-1 rounded-full bg-gray-200" />
@@ -63,7 +63,7 @@ export default function HeroSection() {
 
           <motion.h1
             variants={item}
-            className="relative text-5xl font-bold tracking-tight text-gray-900 sm:text-7xl lg:text-8xl antialiased"
+            className="relative text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight text-gray-900 antialiased"
           >
             <span className="block bg-clip-text bg-gradient-to-r from-indigo-600 to-indigo-400 text-transparent">
               Elevate Your Brand
@@ -72,22 +72,23 @@ export default function HeroSection() {
 
           <motion.p
             variants={item}
-            className="relative mx-auto mt-6 max-w-md text-lg leading-8 text-gray-600 sm:text-xl antialiased"
+            className="relative mx-auto mt-4 sm:mt-6 max-w-md text-base sm:text-lg md:text-xl leading-7 sm:leading-8 text-gray-600 antialiased px-4 sm:px-0"
           >
             Transform your digital presence with expert media solutions
           </motion.p>
 
           <motion.div
             variants={item}
-            className="relative mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6"
+            className="relative mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6"
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              className="w-full sm:w-auto"
             >
               <Link
                 href="#consultation"
-                className="relative inline-flex items-center gap-x-2 rounded-full bg-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-lg hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                className="relative inline-flex w-full sm:w-auto items-center justify-center gap-x-2 rounded-full bg-indigo-600 px-6 sm:px-8 py-3 text-sm font-semibold text-white shadow-lg hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 <span className="absolute inset-0 rounded-full bg-white/10" />
                 Start Growing Now
@@ -110,8 +111,8 @@ export default function HeroSection() {
           </motion.div>
         </div>
 
-        {/* Fixed scroll indicator at bottom */}
-        <div className="fixed bottom-8 left-0 right-0 z-10">
+        {/* Fixed scroll indicator at bottom - Hide on mobile */}
+        <div className="fixed bottom-8 left-0 right-0 z-10 hidden sm:block">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

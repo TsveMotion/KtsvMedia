@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useScroll, useSpring } from 'framer-motion';
+import { useEffect } from 'react';
 
 const services = [
   {
@@ -60,61 +61,123 @@ const services = [
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5
+    }
+  }
+};
+
 export default function Services() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  useEffect(() => {
+    // Add smooth scrolling behavior
+    const smoothScroll = (e: Event) => {
+      e.preventDefault();
+      const href = (e.currentTarget as HTMLAnchorElement).getAttribute('href');
+      if (!href?.startsWith('#')) return;
+      
+      const element = document.querySelector(href);
+      if (!element) return;
+      
+      window.scrollTo({
+        top: element.getBoundingClientRect().top + window.scrollY - 80,
+        behavior: 'smooth'
+      });
+    };
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', smoothScroll);
+    });
+
+    return () => {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.removeEventListener('click', smoothScroll);
+      });
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <main className="relative min-h-screen bg-white">
+      {/* Progress bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-indigo-600 origin-left z-50"
+        style={{ scaleX }}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center"
+          className="text-center space-y-4"
         >
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 bg-clip-text text-transparent sm:text-5xl lg:text-6xl">
             Our Services
           </h1>
           <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-            We offer comprehensive digital solutions to help your business thrive in the modern world.
+            We offer a range of professional services to help transform your digital presence and grow your business.
           </p>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="mt-20 grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
         >
           {services.map((service, index) => (
             <motion.div
               key={service.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * index }}
+              variants={itemVariants}
+              whileHover={{ scale: 1.02 }}
               className="relative group"
             >
-              <div className="h-full relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-lg">
+              <div className="h-full relative rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-200 hover:shadow-lg hover:border-indigo-100">
                 <div>
-                  <span className="inline-flex items-center justify-center rounded-xl bg-blue-50 p-3 text-blue-600 group-hover:bg-blue-100 transition-colors duration-200">
+                  <span className="inline-flex items-center justify-center rounded-xl bg-indigo-50 p-3 text-indigo-600 group-hover:bg-indigo-100 transition-colors duration-200">
                     {service.icon}
                   </span>
                 </div>
-                <div className="mt-4">
-                  <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                <div className="mt-6">
+                  <h2 className="text-2xl font-semibold bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 bg-clip-text text-transparent">
                     {service.title}
-                  </h3>
-                  <p className="mt-2 text-gray-600">
+                  </h2>
+                  <p className="mt-3 text-base text-gray-600">
                     {service.description}
                   </p>
                 </div>
-                <div className="mt-4">
-                  <a
-                    href="/schedule"
-                    className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700"
+                <div className="mt-6">
+                  <motion.a
+                    href="#consultation"
+                    className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                    whileHover={{ x: 5 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
                     Learn more
                     <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
-                  </a>
+                  </motion.a>
                 </div>
               </div>
             </motion.div>
@@ -124,25 +187,49 @@ export default function Services() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="mt-16 text-center"
+          transition={{ delay: 0.5 }}
+          className="mt-24 text-center space-y-6"
+          id="consultation"
         >
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Ready to get started?
+          <h2 className="text-3xl font-bold text-gray-900">
+            Ready to Transform Your Digital Presence?
           </h2>
-          <p className="mt-4 text-lg text-gray-600">
-            Schedule a free consultation to discuss your project needs.
+          <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
+            Schedule a free consultation to discuss your project needs and discover how we can help you achieve your goals.
           </p>
           <div className="mt-8">
-            <a
+            <motion.a
               href="/schedule"
-              className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+              className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Schedule Consultation
-            </a>
+              Schedule Your Free Consultation
+            </motion.a>
           </div>
         </motion.div>
       </div>
-    </div>
+
+      {/* Floating "Book Now" button for mobile */}
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 lg:hidden"
+      >
+        <a
+          href="#consultation"
+          className="inline-flex items-center gap-x-2 rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        >
+          Book Your Free Call
+          <motion.span
+            animate={{ x: [0, 5, 0] }}
+            transition={{ duration: 1, repeat: Infinity }}
+          >
+            →
+          </motion.span>
+        </a>
+      </motion.div>
+    </main>
   );
 }

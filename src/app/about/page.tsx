@@ -1,6 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useScroll, useSpring } from 'framer-motion';
+import { useEffect } from 'react';
+import Image from 'next/image';
 
 const team = [
   {
@@ -62,127 +64,208 @@ const values = [
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5
+    }
+  }
+};
+
 export default function About() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  useEffect(() => {
+    // Add smooth scrolling behavior
+    const smoothScroll = (e: Event) => {
+      e.preventDefault();
+      const href = (e.currentTarget as HTMLAnchorElement).getAttribute('href');
+      if (!href?.startsWith('#')) return;
+      
+      const element = document.querySelector(href);
+      if (!element) return;
+      
+      window.scrollTo({
+        top: element.getBoundingClientRect().top + window.scrollY - 80,
+        behavior: 'smooth'
+      });
+    };
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', smoothScroll);
+    });
+
+    return () => {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.removeEventListener('click', smoothScroll);
+      });
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <div className="relative bg-white py-16 sm:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl lg:text-5xl">
-              About KtsvMedia
-            </h1>
-            <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-              We are a team of digital innovators passionate about creating impactful solutions
-              that drive business growth and success.
-            </p>
-          </motion.div>
+    <main className="relative min-h-screen bg-white">
+      {/* Progress bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-indigo-600 origin-left z-50"
+        style={{ scaleX }}
+      />
 
-          {/* Values Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-16"
-          >
-            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-8">
-              Our Values
-            </h2>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {values.map((value, index) => (
-                <motion.div
-                  key={value.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                  className="relative group"
-                >
-                  <div className="h-full relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-lg">
-                    <div>
-                      <span className="inline-flex items-center justify-center rounded-xl bg-blue-50 p-3 text-blue-600 group-hover:bg-blue-100 transition-colors duration-200">
-                        {value.icon}
-                      </span>
-                    </div>
-                    <div className="mt-4">
-                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
-                        {value.title}
-                      </h3>
-                      <p className="mt-2 text-gray-600">
-                        {value.description}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-4"
+        >
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 bg-clip-text text-transparent sm:text-5xl lg:text-6xl">
+            About Us
+          </h1>
+          <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
+            We're passionate about helping businesses succeed in the digital world through innovative solutions and expert guidance.
+          </p>
+        </motion.div>
 
-          {/* Team Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mt-20"
-          >
-            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-8">
-              What Drives Us
-            </h2>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {team.map((member, index) => (
-                <motion.div
-                  key={member.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                  className="text-center"
-                >
-                  <div className="space-y-4">
-                    <div className="aspect-w-3 aspect-h-2">
-                      <div className="w-full h-48 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg" />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-lg leading-6 font-medium space-y-1">
-                        <h3 className="text-gray-900">{member.name}</h3>
-                        <p className="text-blue-600">{member.role}</p>
-                      </div>
-                      <div className="text-gray-600">
-                        <p>{member.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* CTA Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="mt-20 text-center"
-          >
-            <h2 className="text-2xl font-semibold text-gray-900">
-              Ready to Work Together?
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Let&apos;s create something amazing together!
-            </p>
-            <div className="mt-8">
-              <a
-                href="/schedule"
-                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+        {/* Values Section */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="mt-24"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Our Values
+          </h2>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {values.map((value) => (
+              <motion.div
+                key={value.title}
+                variants={itemVariants}
+                whileHover={{ scale: 1.02 }}
+                className="relative group"
               >
-                Schedule a Call
-              </a>
-            </div>
-          </motion.div>
-        </div>
+                <div className="h-full relative rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-200 hover:shadow-lg hover:border-indigo-100">
+                  <div>
+                    <span className="inline-flex items-center justify-center rounded-xl bg-indigo-50 p-3 text-indigo-600 group-hover:bg-indigo-100 transition-colors duration-200">
+                      {value.icon}
+                    </span>
+                  </div>
+                  <div className="mt-6">
+                    <h3 className="text-xl font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
+                      {value.title}
+                    </h3>
+                    <p className="mt-3 text-base text-gray-600">
+                      {value.description}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Team Section */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="mt-24"
+        >
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            What Drives Us
+          </h2>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {team.map((member) => (
+              <motion.div
+                key={member.name}
+                variants={itemVariants}
+                whileHover={{ scale: 1.02 }}
+                className="relative group"
+              >
+                <div className="h-full relative rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-200 hover:shadow-lg hover:border-indigo-100">
+                  <div className="aspect-w-3 aspect-h-2 mb-6">
+                    <div className="w-full h-48 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-xl" />
+                  </div>
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <h3 className="text-2xl font-semibold bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 bg-clip-text text-transparent">
+                        {member.name}
+                      </h3>
+                      <p className="text-indigo-600 font-medium mt-1">{member.role}</p>
+                    </div>
+                    <p className="text-gray-600 text-center">
+                      {member.description}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-24 text-center space-y-6"
+          id="consultation"
+        >
+          <h2 className="text-3xl font-bold text-gray-900">
+            Ready to Work Together?
+          </h2>
+          <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
+            Let&apos;s create something amazing together and transform your digital presence!
+          </p>
+          <div className="mt-8">
+            <motion.a
+              href="/schedule"
+              className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Schedule Your Free Consultation
+            </motion.a>
+          </div>
+        </motion.div>
       </div>
-    </div>
+
+      {/* Floating "Book Now" button for mobile */}
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 lg:hidden"
+      >
+        <a
+          href="#consultation"
+          className="inline-flex items-center gap-x-2 rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        >
+          Book Your Free Call
+          <motion.span
+            animate={{ x: [0, 5, 0] }}
+            transition={{ duration: 1, repeat: Infinity }}
+          >
+            →
+          </motion.span>
+        </a>
+      </motion.div>
+    </main>
   );
 }
